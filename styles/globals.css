@@ -1,0 +1,193 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* 自定义CSS变量用于主题切换 */
+:root {
+  --bg-primary: #FAF7F2;
+  --bg-secondary: #F5EFE6;
+  --text-primary: #2B1505;
+  --text-secondary: #6B3410;
+  --accent: #A0522D;
+  --warm: #D2691E;
+}
+
+.dark {
+  --bg-primary: #1A1209;
+  --bg-secondary: #2B1E17;
+  --text-primary: #F5EFE6;
+  --text-secondary: #D9C7B5;
+  --accent: #C8A882;
+  --warm: #FBD16E;
+}
+
+/* 全局样式 */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--warm);
+}
+
+/* 选择文本样式 */
+::selection {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+/* 游戏风格发光效果 */
+.glow-effect {
+  box-shadow: 0 0 10px rgba(160, 82, 45, 0.3);
+  transition: all 0.3s ease;
+}
+
+.glow-effect:hover {
+  box-shadow: 0 0 20px rgba(160, 82, 45, 0.6), 0 0 40px rgba(160, 82, 45, 0.3);
+}
+
+/* 粒子背景动画 */
+.particles-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0.1;
+  animation: particles 20s linear infinite;
+}
+
+/* 卡片3D翻转效果 */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.card-3d:hover {
+  transform: rotateY(10deg) rotateX(5deg);
+}
+
+/* 平滑字体渲染 */
+.smooth-text {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 加载动画 */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.loading-pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 代码高亮样式 */
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name,
+.hljs-tag {
+  color: #8b5cf6;
+  font-weight: bold;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-section,
+.hljs-attribute,
+.hljs-literal,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-addition {
+  color: #059669;
+}
+
+.hljs-deletion,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-meta {
+  color: #dc2626;
+}
+
+.hljs-doctag {
+  color: #7c3aed;
+}
+
+.hljs-attr {
+  color: #d97706;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link {
+  color: #0891b2;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
