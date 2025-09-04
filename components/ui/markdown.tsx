@@ -63,9 +63,10 @@ export function Markdown({ content, className }: MarkdownProps) {
             </li>
           ),
           // 代码块样式
-          code: ({ inline, className, children, ...props }) => {
+          code: ({ className, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(className || '')
-            return !inline && match ? (
+            const isInline = (props as any)?.inline !== undefined ? (props as any).inline : !match
+            return !isInline && match ? (
               <div className="relative">
                 <div className="absolute top-2 right-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
                   {match[1]}
