@@ -30,7 +30,7 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
   const [formData, setFormData] = useState({
     title: post?.title || '',
     content: post?.content || '',
-    category: post?.category || '',
+    category: post?.category || 'AI',
     tags: post?.tags || [],
   })
   
