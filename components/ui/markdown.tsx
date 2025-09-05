@@ -21,6 +21,12 @@ export function Markdown({ content, className }: MarkdownProps) {
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeHighlight, rehypeRaw, rehypeKatex]}
         components={{
+          math: ({ children }) => (
+            <div className="katex-block my-4">{children}</div>
+          ),
+          inlineMath: ({ children }) => (
+            <span className="katex-inline">{children}</span>
+          ),
           // 自定义标题样式
           h1: ({ children }) => (
             <h1 className="text-3xl font-bold text-primary-800 dark:text-warm-100 mb-6 mt-8 border-b border-primary-200 dark:border-dark-600 pb-2">
