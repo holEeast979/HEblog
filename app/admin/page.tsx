@@ -156,7 +156,7 @@ function AdminPageContent() {
                           {post.title}
                         </CardTitle>
                         <CardDescription className="text-base line-clamp-2">
-                          {truncateText(post.content.replace(/[#*]/g, '').trim(), 150)}
+                          {post.summary || '暂无简介'}
                         </CardDescription>
                       </div>
                       
