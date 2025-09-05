@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { DataService } from '@/lib/data-service'
+import { SupabaseService } from '@/lib/supabase-service'
 
 // GET /api/categories - 获取所有分类
 export async function GET(request: NextRequest) {
   try {
-    const result = await DataService.getCategories()
+    const result = await SupabaseService.getCategories()
 
     if (!result.success) {
       return NextResponse.json(

@@ -52,6 +52,8 @@ function EditPostPageContent({ params }: EditPostPageProps) {
 
   const handleSave = async (postData: Partial<Post>) => {
     try {
+      console.log('开始保存文章，数据：', postData)
+      
       const response = await fetch(`/api/posts/${params.id}`, {
         method: 'PUT',
         headers: {
@@ -60,19 +62,22 @@ function EditPostPageContent({ params }: EditPostPageProps) {
         body: JSON.stringify(postData),
       })
 
+      console.log('API响应状态：', response.status)
+      
       if (response.ok) {
         const updatedPost = await response.json()
+        console.log('文章保存成功：', updatedPost)
         setPost(updatedPost)
-        // TODO: 显示成功提示
+        alert('文章保存成功！')
         router.push('/admin')
       } else {
-        const error = await response.json()
-        console.error('Failed to update post:', error)
-        // TODO: 显示错误提示
+        const errorData = await response.json().catch(() => ({ error: '未知错误' }))
+        console.error('保存失败，服务器响应：', { status: response.status, data: errorData })
+        alert(`保存失败：${errorData.error || '未知错误'}`)
       }
     } catch (error) {
-      console.error('Update post error:', error)
-      // TODO: 显示错误提示
+      console.error('网络或其他错误：', error)
+      alert(`保存失败：${error instanceof Error ? error.message : '网络错误'}`)
     }
   }
 

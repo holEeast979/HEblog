@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { DataService } from '@/lib/data-service'
+import { SupabaseService } from '@/lib/supabase-service'
 
 // GET /api/tags - 获取所有标签
 export async function GET(request: NextRequest) {
   try {
-    const result = await DataService.getAllTags()
+    const result = await SupabaseService.getAllTags()
 
     if (!result.success) {
       return NextResponse.json(

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { DataService } from '@/lib/data-service'
+import { SupabaseService } from '@/lib/supabase-service'
 
 // GET /api/posts - 获取所有文章或搜索文章
 export async function GET(request: NextRequest) {
@@ -12,13 +12,13 @@ export async function GET(request: NextRequest) {
 
     if (query) {
       // 搜索文章
-      result = await DataService.searchPosts(query, category || undefined)
+      result = await SupabaseService.searchPosts(query, category || undefined)
     } else if (category) {
       // 按分类获取文章
-      result = await DataService.getPostsByCategory(category)
+      result = await SupabaseService.getPostsByCategory(category)
     } else {
       // 获取所有文章
-      result = await DataService.getAllPosts()
+      result = await SupabaseService.getAllPosts()
     }
 
     if (!result.success) {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       tags: body.tags || [],
     }
 
-    const result = await DataService.createPost(postData)
+    const result = await SupabaseService.createPost(postData)
 
     if (!result.success) {
       return NextResponse.json(

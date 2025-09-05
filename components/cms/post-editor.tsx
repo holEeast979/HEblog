@@ -11,7 +11,7 @@ import { TagInput } from "@/components/ui/tag-input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Post } from "@/lib/types"
-import { formatDate } from "@/lib/utils"
+import { formatDate, formatBeijingTime, getRelativeTime } from "@/lib/utils"
 
 interface PostEditorProps {
   post?: Post
@@ -240,9 +240,14 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-primary-600 dark:text-warm-400">更新时间</span>
-                  <span className="text-sm text-primary-800 dark:text-warm-200">
-                    {formatDate(post.updatedAt)}
-                  </span>
+                  <div className="text-right">
+                    <div className="text-sm text-primary-800 dark:text-warm-200">
+                      {formatBeijingTime(post.updatedAt)}
+                    </div>
+                    <div className="text-xs text-primary-500 dark:text-warm-500">
+                      {getRelativeTime(post.updatedAt)}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-primary-600 dark:text-warm-400">更新次数</span>
@@ -250,6 +255,31 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
                     {post.updates.length} 次
                   </Badge>
                 </div>
+                {/* 更新历史 */}
+                {post.updates.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-primary-200 dark:border-dark-600">
+                    <h4 className="text-sm font-medium text-primary-700 dark:text-warm-300 mb-3">
+                      最近更新记录
+                    </h4>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {post.updates.slice(0, 3).map((update, index) => (
+                        <div key={update.id} className="text-xs">
+                          <div className="text-primary-600 dark:text-warm-400">
+                            {update.description}
+                          </div>
+                          <div className="text-primary-400 dark:text-warm-600">
+                            {getRelativeTime(update.timestamp)}
+                          </div>
+                        </div>
+                      ))}
+                      {post.updates.length > 3 && (
+                        <div className="text-xs text-primary-400 dark:text-warm-600">
+                          还有 {post.updates.length - 3} 条更新记录...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { DataService } from '@/lib/data-service'
+import { SupabaseService } from '@/lib/supabase-service'
 
 // POST /api/posts/[id]/updates - 添加文章更新记录
 export async function POST(
@@ -22,7 +22,7 @@ export async function POST(
       description: body.description,
     }
 
-    const result = await DataService.addPostUpdate(params.id, updateData)
+    const result = await SupabaseService.addPostUpdate(params.id, updateData)
 
     if (!result.success) {
       return NextResponse.json(

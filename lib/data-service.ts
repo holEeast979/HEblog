@@ -21,9 +21,20 @@ async function readDataFile(): Promise<{ posts: Post[]; categories: Category[] }
 // 写入数据文件
 async function writeDataFile(data: { posts: Post[]; categories: Category[] }): Promise<void> {
   try {
+    console.log(`尝试写入数据文件: ${DATA_FILE}`)
+    console.log('数据内容:', JSON.stringify(data, null, 2).slice(0, 200) + '...')
+    
     await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8')
+    console.log('数据文件写入成功')
   } catch (error) {
     console.error('Error writing data file:', error)
+    console.error('错误详情:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as any)?.code,
+      errno: (error as any)?.errno,
+      path: (error as any)?.path
+    })
     throw new Error('Failed to save data')
   }
 }
@@ -130,26 +141,39 @@ export class DataService {
   // 更新文章
   static async updatePost(id: string, postData: Partial<Omit<Post, 'id' | 'createdAt' | 'updates'>>): Promise<ApiResponse<Post>> {
     try {
+      console.log(`DataService: 开始更新文章 ID=${id}, 数据:`, postData)
+      
       const data = await readDataFile()
+      console.log(`DataService: 成功读取数据文件，共 ${data.posts.length} 篇文章`)
+      
       const postIndex = data.posts.findIndex(p => p.id === id)
+      console.log(`DataService: 查找文章索引: ${postIndex}`)
       
       if (postIndex === -1) {
+        console.error('DataService: 文章未找到')
         return { success: false, error: 'Post not found' }
       }
 
       const existingPost = data.posts[postIndex]
+      console.log('DataService: 现有文章数据:', existingPost)
+      
       const updatedPost: Post = {
         ...existingPost,
         ...postData,
         updatedAt: new Date().toISOString()
       }
+      console.log('DataService: 更新后的文章数据:', updatedPost)
 
       data.posts[postIndex] = updatedPost
       data.categories = updateCategoryCount(data.categories, data.posts)
       
+      console.log('DataService: 开始写入数据文件...')
       await writeDataFile(data)
+      console.log('DataService: 数据文件写入成功')
+      
       return { success: true, data: updatedPost }
     } catch (error) {
+      console.error('DataService: 更新文章失败:', error)
       return { success: false, error: 'Failed to update post' }
     }
   }
