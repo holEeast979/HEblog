@@ -39,6 +39,7 @@ export async function PUT(
     
     const updateData = {
       title: body.title,
+      summary: body.summary,
       content: body.content,
       category: body.category,
       tags: body.tags,

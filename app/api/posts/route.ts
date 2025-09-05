@@ -44,15 +44,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // 验证必要字段
-    if (!body.title || !body.content || !body.category) {
+    if (!body.title || !body.summary || !body.content || !body.category) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, content, category' },
+        { error: 'Missing required fields: title, summary, content, category' },
         { status: 400 }
       )
     }
 
     const postData = {
       title: body.title,
+      summary: body.summary,
       content: body.content,
       category: body.category,
       tags: body.tags || [],
