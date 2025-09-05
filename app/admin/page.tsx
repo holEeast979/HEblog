@@ -2,16 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Search, Edit, Trash2, Eye, Calendar, Tag, Filter } from 'lucide-react'
+import { Plus, Edit, Trash2, Calendar, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LoadingAnimation } from '@/components/animations/loading-animation'
 import { AuthGuard } from '@/components/auth/auth-guard'
-import { Post, Category } from '@/lib/types'
-import { formatDate, truncateText } from '@/lib/utils'
+import { Post } from '@/lib/types'
+import { formatDate, truncateText, getRelativeTime } from '@/lib/utils'
 
 export default function AdminPage() {
   return (
@@ -23,65 +21,29 @@ export default function AdminPage() {
 
 function AdminPageContent() {
   const [posts, setPosts] = useState<Post[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
 
-  // 获取数据
+  // 获取文章数据
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPosts = async () => {
       try {
-        const [postsResponse, categoriesResponse] = await Promise.all([
-          fetch('/api/posts'),
-          fetch('/api/categories')
-        ])
-
-        if (postsResponse.ok) {
-          const postsData = await postsResponse.json()
+        const response = await fetch('/api/posts')
+        if (response.ok) {
+          const postsData = await response.json()
           console.log('Posts data:', postsData)
           setPosts(postsData)
-          setFilteredPosts(postsData)
         } else {
-          console.error('Failed to fetch posts:', postsResponse.status)
-        }
-
-        if (categoriesResponse.ok) {
-          const categoriesData = await categoriesResponse.json()
-          console.log('Categories data:', categoriesData)
-          setCategories(categoriesData)
-        } else {
-          console.error('Failed to fetch categories:', categoriesResponse.status)
+          console.error('Failed to fetch posts:', response.status)
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error)
+        console.error('Failed to fetch posts:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
+    fetchPosts()
   }, [])
-
-  // 过滤文章
-  useEffect(() => {
-    let filtered = posts
-
-    if (searchQuery) {
-      filtered = filtered.filter(post => 
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    }
-
-    if (selectedCategory) {
-      filtered = filtered.filter(post => post.category === selectedCategory)
-    }
-
-    setFilteredPosts(filtered)
-  }, [posts, searchQuery, selectedCategory])
 
   const handleDeletePost = async (postId: string) => {
     if (!confirm('确定要删除这篇文章吗？此操作不可撤销。')) {
@@ -95,20 +57,16 @@ function AdminPageContent() {
 
       if (response.ok) {
         setPosts(posts.filter(post => post.id !== postId))
-        // TODO: 显示成功提示
+        alert('文章删除成功！')
       } else {
-        // TODO: 显示错误提示
+        alert('删除失败，请重试')
         console.error('Failed to delete post')
       }
     } catch (error) {
+      alert('删除失败，请检查网络连接')
       console.error('Delete post error:', error)
     }
   }
-
-  const categoryOptions = [
-    { value: '', label: '全部分类' },
-    ...categories.map(cat => ({ value: cat.name, label: cat.name }))
-  ]
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -128,192 +86,133 @@ function AdminPageContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8 animate-fade-in">
-        {/* 头部 */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-slide-up">
-          <div>
-            <h1 className="text-3xl font-bold text-primary-800 dark:text-warm-100">
-              内容管理
-            </h1>
-            <p className="text-primary-600 dark:text-warm-300 mt-1">
-              管理你的知识文章和内容
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-warm-50 dark:from-dark-900 dark:to-dark-800">
+      <div className="container mx-auto px-4 py-8 animate-fade-in">
+        {/* 简洁的头部 */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full mb-6 shadow-2xl">
+            <Edit className="w-8 h-8 text-white" />
           </div>
-
-          <div>
-            <Link href="/admin/new">
-              <Button size="lg" variant="glow" className="flex items-center space-x-2">
-                <Plus className="w-5 h-5" />
-                <span>新建文章</span>
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* 统计卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="hover:shadow-xl transition-shadow duration-300 animate-fade-in">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">总文章数</CardTitle>
-              <Edit className="h-4 w-4 text-primary-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary-800 dark:text-warm-100">
-                {posts.length}
-              </div>
-              <p className="text-xs text-primary-600 dark:text-warm-400">
-                已发布的文章
-              </p>
-            </CardContent>
-          </Card>
-
-          {categories.map((category, index) => (
-            <Card 
-              key={category.id} 
-              className="hover:shadow-xl transition-shadow duration-300 animate-fade-in glow-effect"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{category.name}</CardTitle>
-                <div className={`p-2 rounded-lg bg-gradient-to-br ${getCategoryColor(category.name)} text-white transform hover:scale-110 transition-transform duration-200`}>
-                  <span className="text-sm font-bold">{category.icon}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary-800 dark:text-warm-100">
-                  {category.count}
-                </div>
-                <p className="text-xs text-primary-600 dark:text-warm-400">
-                  {category.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* 搜索和过滤 */}
-        <div className="flex flex-col md:flex-row gap-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary-400 dark:text-warm-500" />
-            <Input
-              placeholder="搜索文章标题、内容或标签..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <h1 className="text-4xl font-bold text-primary-800 dark:text-warm-100 mb-4">
+            🔐 管理员界面
+          </h1>
+          <p className="text-xl text-primary-600 dark:text-warm-300 mb-8">
+            管理和编辑你的所有文章
+          </p>
           
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 text-primary-600 dark:text-warm-400" />
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-              options={categoryOptions}
-              className="w-40"
-            />
-          </div>
+          <Link href="/admin/new">
+            <Button size="xl" variant="glow" className="text-lg bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 shadow-2xl">
+              <Plus className="w-6 h-6 mr-2" />
+              创建新文章
+            </Button>
+          </Link>
         </div>
 
-        {/* 文章列表 */}
-        <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          {filteredPosts.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Edit className="h-12 w-12 text-primary-400 dark:text-warm-500 mb-4" />
-                <h3 className="text-lg font-medium text-primary-800 dark:text-warm-100 mb-2">
-                  {searchQuery || selectedCategory ? '没有找到匹配的文章' : '还没有文章'}
+        {/* 简化的文章列表 */}
+        {posts.length === 0 ? (
+          <div className="max-w-2xl mx-auto">
+            <Card className="text-center py-12 shadow-2xl">
+              <CardContent>
+                <div className="mb-6">
+                  <Edit className="w-20 h-20 text-primary-400 dark:text-warm-500 mx-auto mb-4" />
+                </div>
+                <h3 className="text-2xl font-bold text-primary-800 dark:text-warm-100 mb-4">
+                  还没有文章
                 </h3>
-                <p className="text-primary-600 dark:text-warm-400 text-center mb-6">
-                  {searchQuery || selectedCategory 
-                    ? '尝试调整搜索条件或清除过滤器' 
-                    : '创建你的第一篇文章，开始分享知识'
-                  }
+                <p className="text-lg text-primary-600 dark:text-warm-400 mb-8">
+                  开始创建你的第一篇文章吧！
                 </p>
-                {!searchQuery && !selectedCategory && (
-                  <Link href="/admin/new">
-                    <Button variant="outline">
-                      <Plus className="w-4 h-4 mr-2" />
-                      新建文章
-                    </Button>
-                  </Link>
-                )}
+                <Link href="/admin/new">
+                  <Button size="lg" variant="glow">
+                    <Plus className="w-5 h-5 mr-2" />
+                    创建文章
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
-          ) : (
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-primary-800 dark:text-warm-100 mb-2">
+                所有文章 ({posts.length})
+              </h2>
+              <p className="text-primary-600 dark:text-warm-400">
+                点击编辑按钮开始修改你的文章
+              </p>
+            </div>
+            
             <div className="grid gap-6">
-              {filteredPosts.map((post, index) => (
+              {posts.map((post, index) => (
                 <Card 
                   key={post.id} 
-                  className="hover:shadow-2xl transition-shadow duration-300 animate-fade-in glow-effect"
+                  className="hover:shadow-2xl transition-all duration-300 animate-fade-in border-l-4 border-l-primary-500"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1 mr-4">
-                        <CardTitle className="text-lg hover:text-primary-600 dark:hover:text-warm-300 transition-colors cursor-pointer">
-                          <Link href={`/posts/${post.id}`}>
-                            {post.title}
-                          </Link>
+                        <CardTitle className="text-xl mb-2 text-primary-800 dark:text-warm-100">
+                          {post.title}
                         </CardTitle>
-                        <CardDescription className="mt-2 line-clamp-2">
-                          {truncateText(post.content.replace(/[#*]/g, '').trim(), 120)}
+                        <CardDescription className="text-base line-clamp-2">
+                          {truncateText(post.content.replace(/[#*]/g, '').trim(), 150)}
                         </CardDescription>
                       </div>
                       
-                      <div className={`p-2 rounded-lg bg-gradient-to-br ${getCategoryColor(post.category)} text-white shadow-md flex-shrink-0`}>
-                        <span className="text-xs font-semibold">{post.category}</span>
+                      <div className={`px-3 py-1 rounded-full bg-gradient-to-br ${getCategoryColor(post.category)} text-white shadow-lg flex-shrink-0`}>
+                        <span className="text-sm font-semibold">{post.category}</span>
                       </div>
                     </div>
                   </CardHeader>
 
                   <CardContent>
                     {/* 标签 */}
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {post.tags.slice(0, 4).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          <Tag className="w-3 h-3 mr-1" />
-                          {tag}
-                        </Badge>
-                      ))}
-                      {post.tags.length > 4 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{post.tags.length - 4}
-                        </Badge>
-                      )}
-                    </div>
+                    {post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {post.tags.slice(0, 6).map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-sm px-3 py-1">
+                            <Tag className="w-3 h-3 mr-1" />
+                            {tag}
+                          </Badge>
+                        ))}
+                        {post.tags.length > 6 && (
+                          <Badge variant="secondary" className="text-sm px-3 py-1">
+                            +{post.tags.length - 6}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
 
                     {/* 底部信息和操作 */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pt-4 border-t border-primary-200 dark:border-dark-600">
                       <div className="flex items-center space-x-4 text-sm text-primary-600 dark:text-warm-400">
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-2">
                           <Calendar className="w-4 h-4" />
                           <span>{formatDate(post.createdAt)}</span>
                         </div>
                         {post.updates.length > 0 && (
                           <Badge variant="outline" className="text-xs">
-                            {post.updates.length} 次更新
+                            {post.updates.length} 次更新 • {getRelativeTime(post.updatedAt)}
                           </Badge>
                         )}
                       </div>
 
-                      <div className="flex items-center space-x-1">
-                        <Link href={`/posts/${post.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
+                      <div className="flex items-center space-x-2">
                         <Link href={`/admin/edit/${post.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="w-4 h-4" />
+                          <Button size="lg" variant="glow" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
+                            <Edit className="w-5 h-5 mr-2" />
+                            编辑文章
                           </Button>
                         </Link>
                         <Button 
-                          variant="ghost" 
-                          size="sm" 
+                          variant="outline" 
+                          size="lg"
                           onClick={() => handleDeletePost(post.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5 mr-2" />
+                          删除
                         </Button>
                       </div>
                     </div>
@@ -321,8 +220,9 @@ function AdminPageContent() {
                 </Card>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+    </div>
   )
 }

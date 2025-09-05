@@ -154,9 +154,9 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/admin">
-                <Button size="xl" variant="outline" className="text-lg">
+                <Button size="xl" variant="glow" className="text-lg bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-2xl border-0 animate-pulse">
                   <Code className="w-5 h-5 mr-2" />
-                  内容管理
+                  🔐 管理员界面
                 </Button>
               </Link>
             </div>
