@@ -20,6 +20,7 @@ export class SupabaseService {
       const posts: Post[] = data.map(post => ({
         id: post.id,
         title: post.title,
+        summary: post.summary || '',
         content: post.content,
         category: post.category,
         tags: post.tags || [],
@@ -67,6 +68,7 @@ export class SupabaseService {
       const post: Post = {
         id: postData.id,
         title: postData.title,
+        summary: postData.summary || '',
         content: postData.content,
         category: postData.category,
         tags: postData.tags || [],
@@ -99,6 +101,7 @@ export class SupabaseService {
       const posts: Post[] = data.map(post => ({
         id: post.id,
         title: post.title,
+        summary: post.summary || '',
         content: post.content,
         category: post.category,
         tags: post.tags || [],
@@ -139,6 +142,7 @@ export class SupabaseService {
       const posts: Post[] = data.map(post => ({
         id: post.id,
         title: post.title,
+        summary: post.summary || '',
         content: post.content,
         category: post.category,
         tags: post.tags || [],
@@ -171,6 +175,7 @@ export class SupabaseService {
       const newPost = {
         id: generateId(),
         title: postData.title,
+        summary: postData.summary,
         content: postData.content,
         category: postData.category,
         tags: postData.tags,
@@ -192,6 +197,7 @@ export class SupabaseService {
       const post: Post = {
         id: data.id,
         title: data.title,
+        summary: data.summary || '',
         content: data.content,
         category: data.category,
         tags: data.tags || [],
@@ -227,6 +233,7 @@ export class SupabaseService {
       // 准备更新数据
       const updateData = {
         ...(postData.title && { title: postData.title }),
+        ...(postData.summary && { summary: postData.summary }),
         ...(postData.content && { content: postData.content }),
         ...(postData.category && { category: postData.category }),
         ...(postData.tags && { tags: postData.tags }),
@@ -256,6 +263,9 @@ export class SupabaseService {
       // 检查哪些字段真正发生了变化
       if (postData.title && postData.title !== originalPost.title) {
         changedFields.push('标题')
+      }
+      if (postData.summary && postData.summary !== originalPost.summary) {
+        changedFields.push('简介')
       }
       if (postData.content && postData.content !== originalPost.content) {
         changedFields.push('内容')
@@ -314,6 +324,7 @@ export class SupabaseService {
       const post: Post = {
         id: data.id,
         title: data.title,
+        summary: data.summary || '',
         content: data.content,
         category: data.category,
         tags: data.tags || [],

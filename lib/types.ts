@@ -2,6 +2,7 @@
 export interface Post {
   id: string;
   title: string;
+  summary: string;  // 文章简介/摘要
   content: string;
   category: 'AI' | 'Java' | 'Python';
   tags: string[];

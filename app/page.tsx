@@ -88,7 +88,7 @@ function RecentPost({ post }: { post: Post }) {
                 {post.title}
               </CardTitle>
               <CardDescription className="line-clamp-2 mb-3">
-                {post.content.split('\n')[0].replace(/[#*]/g, '').trim()}
+                {post.summary || '暂无简介'}
               </CardDescription>
             </div>
             {Icon && (

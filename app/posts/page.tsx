@@ -66,6 +66,7 @@ export default function PostsPage() {
     if (searchQuery) {
       filtered = filtered.filter(post => 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
       )
@@ -120,7 +121,7 @@ export default function PostsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary-400 dark:text-warm-500" />
                 <Input
-                  placeholder="搜索文章标题、内容或标签..."
+                  placeholder="搜索文章标题、简介、内容或标签..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -210,7 +211,7 @@ export default function PostsPage() {
                               {post.title}
                             </CardTitle>
                             <CardDescription className="text-base leading-relaxed line-clamp-3">
-                              {truncateText(post.content.replace(/[#*]/g, '').trim(), 200)}
+                              {post.summary || '暂无简介'}
                             </CardDescription>
                           </div>
                           

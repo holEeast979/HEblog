@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
-import { Save, Eye, ArrowLeft, Plus } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Save, Eye, ArrowLeft, Plus, Image } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,6 +10,7 @@ import { Select, SelectOption } from "@/components/ui/select"
 import { TagInput } from "@/components/ui/tag-input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import ImageUploader from "@/components/ui/image-uploader"
 import { Post } from "@/lib/types"
 import { formatDate, formatBeijingTime, getRelativeTime } from "@/lib/utils"
 
@@ -29,6 +30,7 @@ const categoryOptions: SelectOption[] = [
 export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProps) {
   const [formData, setFormData] = useState({
     title: post?.title || '',
+    summary: post?.summary || '',
     content: post?.content || '',
     category: post?.category || 'AI',
     tags: post?.tags || [],
@@ -36,12 +38,19 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
   
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPreview, setShowPreview] = useState(false)
+  const [showImageUploader, setShowImageUploader] = useState(false)
+  
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.title.trim()) {
       newErrors.title = '标题不能为空'
+    }
+
+    if (!formData.summary.trim()) {
+      newErrors.summary = '简介不能为空'
     }
 
     if (!formData.content.trim()) {
@@ -80,6 +89,32 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
         return newErrors
       })
     }
+  }
+
+  const handleImageInsert = (markdownText: string) => {
+    const textarea = contentTextareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const currentContent = formData.content
+
+    // 在光标位置插入图片
+    const newContent = 
+      currentContent.substring(0, start) + 
+      markdownText + 
+      currentContent.substring(end)
+
+    handleFieldChange('content', newContent)
+
+    // 重新设置光标位置
+    setTimeout(() => {
+      if (textarea) {
+        const newCursorPos = start + markdownText.length
+        textarea.setSelectionRange(newCursorPos, newCursorPos)
+        textarea.focus()
+      }
+    }, 0)
   }
 
   const isEditing = !!post
@@ -152,12 +187,46 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
                     )}
                   </div>
 
-                  {/* 内容 */}
+                  {/* 简介 */}
                   <div className="space-y-2">
-                    <label htmlFor="content" className="text-sm font-medium text-primary-700 dark:text-warm-300">
-                      文章内容 *
+                    <label htmlFor="summary" className="text-sm font-medium text-primary-700 dark:text-warm-300">
+                      文章简介 *
                     </label>
                     <Textarea
+                      id="summary"
+                      value={formData.summary}
+                      onChange={(e) => handleFieldChange('summary', e.target.value)}
+                      placeholder="输入文章简介，用于在首页和列表页显示（建议100-200字）"
+                      className="min-h-[80px] resize-none"
+                      error={!!errors.summary}
+                    />
+                    {errors.summary && (
+                      <p className="text-sm text-red-600 dark:text-red-400">{errors.summary}</p>
+                    )}
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      💡 简介将在首页和列表页作为文章预览显示，建议简洁明了
+                    </p>
+                  </div>
+
+                  {/* 内容 */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="content" className="text-sm font-medium text-primary-700 dark:text-warm-300">
+                        文章内容 *
+                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowImageUploader(!showImageUploader)}
+                        className="flex items-center space-x-1"
+                      >
+                        <Image className="w-4 h-4" />
+                        <span>{showImageUploader ? '隐藏' : '图片'}</span>
+                      </Button>
+                    </div>
+                    <Textarea
+                      ref={contentTextareaRef}
                       id="content"
                       value={formData.content}
                       onChange={(e) => handleFieldChange('content', e.target.value)}
@@ -168,6 +237,16 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
                     {errors.content && (
                       <p className="text-sm text-red-600 dark:text-red-400">{errors.content}</p>
                     )}
+                    
+                    {/* 图片上传组件 */}
+                    {showImageUploader && (
+                      <div className="mt-4">
+                        <ImageUploader
+                          onImageInsert={handleImageInsert}
+                          className="border-t pt-4"
+                        />
+                      </div>
+                    )}
                   </div>
                 </form>
               ) : (
@@ -176,6 +255,14 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
                   <h1 className="text-3xl font-bold text-primary-800 dark:text-warm-100 mb-4">
                     {formData.title || '未命名文章'}
                   </h1>
+                  {formData.summary && (
+                    <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border-l-4 border-orange-500">
+                      <p className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">📝 文章简介</p>
+                      <p className="text-primary-700 dark:text-warm-200 leading-relaxed">
+                        {formData.summary}
+                      </p>
+                    </div>
+                  )}
                   <div className="whitespace-pre-wrap text-primary-700 dark:text-warm-200 leading-relaxed">
                     {formData.content || '暂无内容'}
                   </div>
