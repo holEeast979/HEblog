@@ -3,8 +3,10 @@
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
 import rehypeHighlight from 'rehype-highlight'
 import rehypeRaw from 'rehype-raw'
+import rehypeKatex from 'rehype-katex'
 import { cn } from '@/lib/utils'
 
 interface MarkdownProps {
@@ -16,8 +18,8 @@ export function Markdown({ content, className }: MarkdownProps) {
   return (
     <div className={cn("prose prose-lg dark:prose-invert max-w-none", className)}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight, rehypeRaw]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeHighlight, rehypeRaw, rehypeKatex]}
         components={{
           // 自定义标题样式
           h1: ({ children }) => (

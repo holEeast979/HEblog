@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import ImageUploader from "@/components/ui/image-uploader"
 import { Post } from "@/lib/types"
 import { formatDate, formatBeijingTime, getRelativeTime } from "@/lib/utils"
+import { Markdown } from "@/components/ui/markdown"
 
 interface PostEditorProps {
   post?: Post
@@ -263,9 +264,7 @@ export function PostEditor({ post, onSave, onCancel, isLoading }: PostEditorProp
                       </p>
                     </div>
                   )}
-                  <div className="whitespace-pre-wrap text-primary-700 dark:text-warm-200 leading-relaxed">
-                    {formData.content || '暂无内容'}
-                  </div>
+                  <Markdown content={formData.content || '暂无内容'} />
                 </div>
               )}
             </CardContent>

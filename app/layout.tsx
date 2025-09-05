@@ -36,6 +36,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+          integrity="sha384-n8MVd4RsQXhiyL1Qk4E6SshY5Qtb5lZB2r+2WZ1vL5coNIVpCf1Lv5Q49VQvZ4QS"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={`${inter.className} smooth-text antialiased`}>
         <ThemeProvider
           attribute="class"
