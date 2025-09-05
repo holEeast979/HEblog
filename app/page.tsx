@@ -1,11 +1,14 @@
-import { Suspense } from 'react'
+"use client"
+
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageTransition } from '@/components/animations/page-transition'
+import { LoadingAnimation } from '@/components/animations/loading-animation'
 import { BookOpen, Code, Brain, Coffee, FileCode, ArrowRight, Clock, Tag } from 'lucide-react'
-import postsData from '@/data/posts.json'
+import { Post, Category } from '@/lib/types'
 
 const categoryIcons = {
   'AI': Brain,
@@ -37,7 +40,7 @@ function LoadingCard() {
   )
 }
 
-function CategoryCard({ category }: { category: typeof postsData.categories[0] }) {
+function CategoryCard({ category }: { category: Category }) {
   const Icon = categoryIcons[category.name as keyof typeof categoryIcons]
   const gradient = categoryColors[category.name as keyof typeof categoryColors]
   
@@ -71,7 +74,7 @@ function CategoryCard({ category }: { category: typeof postsData.categories[0] }
   )
 }
 
-function RecentPost({ post }: { post: typeof postsData.posts[0] }) {
+function RecentPost({ post }: { post: Post }) {
   const Icon = categoryIcons[post.category as keyof typeof categoryIcons]
   const gradient = categoryColors[post.category as keyof typeof categoryColors]
   
@@ -124,7 +127,37 @@ function RecentPost({ post }: { post: typeof postsData.posts[0] }) {
 }
 
 export default function HomePage() {
-  const recentPosts = postsData.posts.slice(0, 3)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  // 获取数据
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [postsResponse, categoriesResponse] = await Promise.all([
+          fetch('/api/posts'),
+          fetch('/api/categories')
+        ])
+
+        if (postsResponse.ok) {
+          const postsData = await postsResponse.json()
+          setPosts(postsData.slice(0, 3)) // 只取前3篇最新文章
+        }
+
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json()
+          setCategories(categoriesData)
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
   
   return (
     <PageTransition>
@@ -182,11 +215,13 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <Suspense fallback={<LoadingCard />}>
-              {postsData.categories.map((category) => (
+            {loading ? (
+              [...Array(3)].map((_, i) => <LoadingCard key={i} />)
+            ) : (
+              categories.map((category) => (
                 <CategoryCard key={category.id} category={category} />
-              ))}
-            </Suspense>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -197,7 +232,11 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-12">
             <div>
               <h2 className="text-3xl lg:text-4xl font-bold text-primary-800 dark:text-warm-100 mb-4">
-                最新文章
+                最新文章 {!loading && posts.length > 0 && (
+                  <Badge variant="outline" className="ml-2">
+                    {posts.length} 篇
+                  </Badge>
+                )}
               </h2>
               <p className="text-lg text-primary-600 dark:text-warm-300">
                 最近更新的知识内容
@@ -213,21 +252,42 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Suspense fallback={[...Array(3)].map((_, i) => <LoadingCard key={i} />)}>
-              {recentPosts.map((post) => (
-                <RecentPost key={post.id} post={post} />
-              ))}
-            </Suspense>
+            {loading ? (
+              [...Array(3)].map((_, i) => <LoadingCard key={i} />)
+            ) : posts.length > 0 ? (
+              posts.map((post, index) => (
+                <div key={post.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <RecentPost post={post} />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <BookOpen className="w-16 h-16 text-primary-400 dark:text-warm-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-primary-800 dark:text-warm-100 mb-2">
+                  还没有文章
+                </h3>
+                <p className="text-primary-600 dark:text-warm-400">
+                  开始创建你的第一篇文章吧！
+                </p>
+                <Link href="/admin">
+                  <Button className="mt-4" variant="outline">
+                    前往管理界面
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
           
-          <div className="text-center mt-8 sm:hidden">
-            <Link href="/posts">
-              <Button variant="outline">
-                查看全部文章
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
+          {!loading && posts.length > 0 && (
+            <div className="text-center mt-8 sm:hidden">
+              <Link href="/posts">
+                <Button variant="outline">
+                  查看全部文章
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </div>
