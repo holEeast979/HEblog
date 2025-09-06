@@ -76,10 +76,7 @@ export default function ImageUploader({ onImageUploaded, onImageInsert, classNam
       // 调用回调函数
       onImageUploaded?.(uploadedImage);
       
-      // 自动插入Markdown格式
-      const fileName = file.name.split('.')[0];
-      const markdownText = `![${fileName}](${result.url})`;
-      onImageInsert?.(markdownText);
+      // 上传完成后不自动插入，由用户手动从“最近上传的图片”中插入
 
       setTimeout(() => {
         setUploadProgress(0);
@@ -217,10 +214,12 @@ export default function ImageUploader({ onImageUploaded, onImageInsert, classNam
                       {formatFileSize(image.size)}
                     </p>
                     <Button
+                      type="button"
                       variant="outline"
                       size="sm"
                       className="mt-1 h-6 text-xs"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         insertImageFromRecent(image);
                       }}
